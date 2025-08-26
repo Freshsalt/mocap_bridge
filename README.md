@@ -193,6 +193,11 @@ z_out = -y_in
 ### 方法一：ROS 话题验证
 
 ```bash
+
+ros2 launch mavros px4.launch fcu_url:=serial:///dev/ttyACM0:115200
+
+另开窗口
+
 ros2 topic echo /mavros/local_position/pose
 ```
 
