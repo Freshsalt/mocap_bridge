@@ -195,8 +195,10 @@ z_out = -y_in
 ```bash
 
 ros2 launch mavros px4.launch fcu_url:=serial:///dev/ttyACM0:115200
-
+```
+波特率和接口根据实际情况调整。
 另开窗口
+```bash
 
 ros2 topic echo /mavros/local_position/pose
 ```
