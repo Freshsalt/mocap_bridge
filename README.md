@@ -1,26 +1,30 @@
-# mocap_bridge  
+# mocap_bridge
+
 **ROS 2 VRPN → MAVROS 动捕位姿桥接节点**
 
 ---
 
 ## 1. 项目简介
 
-`mocap_bridge` 是一个基于 **ROS 2 Humble** 的 Python 功能包，用于将动捕系统通过  
-`/vrpn/<object>/pose` 发布的位姿信息，转换并转发至 **MAVROS** 的：
+`mocap_bridge` 是一个基于 **ROS 2 Humble** 的 Python 功能包，用于将动捕系统通过
 
 ```
+/vrpn/<object>/pose
+```
 
+发布的位姿信息，直接转发至 **MAVROS** 的：
+
+```
 /mavros/mocap/pose
-
-````
+```
 
 从而为 **PX4 飞控**提供可靠的 **无 GPS 位置参考（Motion Capture / Vision Pose）**。
 
 该工程适用于：
 
-- 室内动捕环境（OptiTrack / Vicon / 凌云光等）
-- PX4 + MAVROS2
-- 单机或多机 UAV
+* 室内动捕环境（OptiTrack / Vicon / 凌云光等）
+* PX4 + MAVROS2
+* 单机或多机 UAV
 
 ---
 
@@ -44,7 +48,7 @@
 [ MAVROS2 ]
           ↓
 [ PX4 EKF2 ]
-````
+```
 
 ---
 
@@ -89,7 +93,7 @@ mocap_bridge/
 
 在运行本工程前，请确认：
 
-1. 板载电脑 **已经能收到 VRPN 位姿话题**，例如：
+1. 板载电脑 **已经能收到 VRPN 位姿话题**：
 
 ```bash
 ros2 topic echo /vrpn/UAV0/pose
@@ -164,7 +168,7 @@ EKF2_EV_POS_Z = 0
 
 ### 输入（VRPN）
 
-* 默认：ENU
+* 默认：ENU（East-North-Up）
 
   * x → East
   * y → North
@@ -172,19 +176,13 @@ EKF2_EV_POS_Z = 0
 
 ### 输出（PX4 via MAVROS）
 
-* PX4 使用 NED
+* PX4 使用 NED（North-East-Down），但本节点 **不再做坐标系转换**，直接 ENU → MAVROS ENU 输出，由 MAVROS 插件处理：
 
-  * x → North
-  * y → East
-  * z → Down
+  ```
+  /vrpn/UAV0/pose (ENU) → /mavros/mocap/pose (ENU)
+  ```
 
-本节点已在代码中完成如下映射：
-
-```text
-x_out = x_in
-y_out = z_in
-z_out = -y_in
-```
+> 注意：保持 ENU 原样可避免二次坐标变换造成的姿态漂移问题。
 
 ---
 
@@ -193,19 +191,16 @@ z_out = -y_in
 ### 方法一：ROS 话题验证
 
 ```bash
-
 ros2 launch mavros px4.launch fcu_url:=serial:///dev/ttyACM0:115200
 ```
-波特率和接口根据实际情况调整。
-另开窗口
-```bash
 
+另开终端：
+
+```bash
 ros2 topic echo /mavros/local_position/pose
 ```
 
 移动飞机，位置应随动捕变化。
-
----
 
 ### 方法二：QGroundControl
 
@@ -225,8 +220,6 @@ ros2 topic echo /mavros/local_position/pose
 ```bash
 ros2 launch mocap_bridge mocap_bridge.launch.py
 ```
-
----
 
 ### Q2：能看到 `/vrpn/.../pose`，但 PX4 位置不动
 
@@ -250,4 +243,4 @@ ros2 launch mocap_bridge mocap_bridge.launch.py
 
 ## 13. 许可证
 
-本项目采用 Apache-2.0 License。
+本项目采用 **Apache-2.0 License**。
