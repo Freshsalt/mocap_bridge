@@ -15,7 +15,7 @@
 发布的位姿信息，直接转发至 **MAVROS** 的：
 
 ```
-/mavros/mocap/pose
+/mavros/vision_pose/pose
 ```
 
 从而为 **PX4 飞控**提供可靠的 **无 GPS 位置参考（Motion Capture / Vision Pose）**。
@@ -43,7 +43,7 @@
 [板载电脑]
   mocap_bridge
           ↓
- /mavros/mocap/pose
+ /mavros/vision_pose/pose
           ↓
 [ MAVROS2 ]
           ↓
@@ -78,7 +78,7 @@ mocap_bridge/
 * Ubuntu 22.04
 * ROS 2 Humble
 * MAVROS2
-* PX4（1.13+ 推荐）
+* PX4（1.14 已验证，其他版本可能存在Bug）
 
 ### ROS 2 依赖包
 
@@ -151,8 +151,8 @@ ros2 launch mocap_bridge mocap_bridge.launch.py \
 在 QGroundControl 或 MAVLink Console 中设置：
 
 ```text
-EKF2_AID_MASK = 24     # vision + mocap
-EKF2_EV_CTRL = 3
+EKF2_AID_MASK = 24     # 1.14及以后不存在该参数
+EKF2_EV_CTRL = 7
 EKF2_HGT_MODE = Vision
 EKF2_EV_DELAY = 0
 EKF2_EV_POS_X = 0
@@ -179,10 +179,10 @@ EKF2_EV_POS_Z = 0
 * PX4 使用 NED（North-East-Down），但本节点 **不再做坐标系转换**，直接 ENU → MAVROS ENU 输出，由 MAVROS 插件处理：
 
   ```
-  /vrpn/UAV0/pose (ENU) → /mavros/mocap/pose (ENU)
+  /vrpn/UAV0/pose (ENU) → /mavros/vision_pose/pose (ENU)
   ```
 
-> 注意：保持 ENU 原样可避免二次坐标变换造成的姿态漂移问题。
+> 注意：[参考px4官方文档](https://docs.px4.io/main/zh/ros/external_position_estimation)，不能将数据传递至/mavros/mocap/pose，而是/mavros/vision_pose/pose，mocap不支持EKF2融合。
 
 ---
 
@@ -226,7 +226,7 @@ ros2 launch mocap_bridge mocap_bridge.launch.py
 请重点检查：
 
 * PX4 EKF2 参数是否正确
-* MAVROS 是否订阅 `/mavros/mocap/pose`
+* MAVROS 是否订阅 `/mavros/vision_pose/pose`
 * 频率是否 ≥ 30 Hz（推荐 100 Hz）
 
 ---
